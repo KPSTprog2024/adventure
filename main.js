@@ -128,8 +128,8 @@ class GameScene extends Phaser.Scene {
 
         // 敵の動きの更新
         enemies.getChildren().forEach(function (enemy) {
-            handleEnemyMovement(enemy);
-        });
+            handleEnemyMovement(enemy, this);
+        }, this);
     }
 }
 
@@ -218,6 +218,8 @@ function createEnemy(scene, config, index) {
     const enemy = scene.physics.add.sprite(scene.scale.width - 100, yPosition, 'enemy');
     enemy.setData('movement', config.movement);
     enemy.setData('speed', config.speed);
+    enemy.setData('startX', enemy.x);
+    enemy.setData('startY', enemy.y);
 
     // 敵の表示サイズを設定
     enemy.setDisplaySize(50, 50); // 幅50px、高さ50pxに設定
@@ -226,30 +228,26 @@ function createEnemy(scene, config, index) {
     enemy.body.setSize(enemy.displayWidth, enemy.displayHeight);
 
     // 敵の速度と動きの設定
-    if (config.movement === "floating") {
-        enemy.setVelocityX(-config.speed);
-        enemy.setVelocityY(Phaser.Math.Between(-30, 30));
-        enemy.setCollideWorldBounds(true);
-        enemy.setBounce(1, 1);
-    } else if (config.movement === "glide") {
-        enemy.setVelocityX(-config.speed);
-        enemy.setVelocityY(Math.sin(index) * 50);
-    } else if (config.movement === "wave") {
-        enemy.setVelocityX(-config.speed);
-        enemy.setData('initialY', enemy.y);
-    } else {
-        enemy.setVelocityX(-config.speed);
-    }
+    enemy.setVelocityX(-config.speed);
 
     return enemy;
 }
 
 // 敵の動きを制御する関数
-function handleEnemyMovement(enemy) {
+function handleEnemyMovement(enemy, scene) {
     const movement = enemy.getData('movement');
+    const speed = enemy.getData('speed');
+    const startX = enemy.getData('startX');
+    const startY = enemy.getData('startY');
 
     if (movement === "wave") {
-        enemy.y = enemy.getData('initialY') + Math.sin(enemy.x / 50) * 50;
+        enemy.y = startY + Math.sin((startX - enemy.x) / 50) * 100;
+    } else if (movement === "floating") {
+        enemy.y = startY + Math.sin((startX - enemy.x) / 100) * 50;
+    } else if (movement === "glide") {
+        enemy.y += Math.sin(scene.time.now / 200) * 1.5;
+    } else {
+        // 直線移動（特に処理なし）
     }
 }
 
