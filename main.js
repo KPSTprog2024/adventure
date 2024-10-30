@@ -94,10 +94,12 @@ class GameScene extends Phaser.Scene {
         // プレイヤーの作成
         player = this.physics.add.sprite(100, this.scale.height / 2, 'player');
         player.setCollideWorldBounds(true);
-        player.setScale(0.0625); // サイズを1/16に調整
 
-        // 物理ボディのサイズを調整
-        player.body.setSize(player.width, player.height, true);
+        // プレイヤーの表示サイズを設定
+        player.setDisplaySize(50, 50); // 幅50px、高さ50pxに設定
+
+        // 物理ボディのサイズを表示サイズに合わせる
+        player.body.setSize(player.displayWidth, player.displayHeight);
 
         // 敵グループの作成
         enemies = this.physics.add.group();
@@ -216,10 +218,12 @@ function createEnemy(scene, config, index) {
     const enemy = scene.physics.add.sprite(scene.scale.width - 100, yPosition, 'enemy');
     enemy.setData('movement', config.movement);
     enemy.setData('speed', config.speed);
-    enemy.setScale(0.0625); // サイズを1/16に調整
 
-    // 物理ボディのサイズを調整
-    enemy.body.setSize(enemy.width, enemy.height, true);
+    // 敵の表示サイズを設定
+    enemy.setDisplaySize(50, 50); // 幅50px、高さ50pxに設定
+
+    // 物理ボディのサイズを表示サイズに合わせる
+    enemy.body.setSize(enemy.displayWidth, enemy.displayHeight);
 
     // 敵の速度と動きの設定
     if (config.movement === "floating") {
