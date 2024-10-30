@@ -22,22 +22,22 @@ class TitleScene extends Phaser.Scene {
         // アセットのロード
         this.load.image('background', 'assets/background.png');
         this.load.image('title', 'assets/title.png'); // タイトル画像（必要に応じて）
-        this.load.audio('bgm', 'assets/sounds/bgm.mp3');
+        this.load.audio('bgm', ['assets/sounds/bgm.mp3', 'assets/sounds/bgm.ogg']);
     }
 
     create() {
         // 背景の追加
-        this.add.image(this.scale.width / 2, this.scale.height / 2, 'background');
+        this.add.image(this.scale.width / 2, this.scale.height / 2, 'background').setDisplaySize(this.scale.width, this.scale.height);
 
         // タイトルテキスト
-        const titleText = this.add.text(this.scale.width / 2, 200, 'ゆめのぼうけん', {
+        const titleText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 100, 'ゆめのぼうけん', {
             fontSize: '64px',
             fill: '#ffffff',
             fontFamily: 'Kiwi Maru'
         }).setOrigin(0.5);
 
         // 「はじめる」ボタン
-        const startButton = this.add.text(this.scale.width / 2, 400, 'はじめる', {
+        const startButton = this.add.text(this.scale.width / 2, this.scale.height / 2 + 50, 'はじめる', {
             fontSize: '48px',
             fill: '#ffffff',
             backgroundColor: '#a78bfa',
@@ -51,8 +51,10 @@ class TitleScene extends Phaser.Scene {
         });
 
         // 背景音楽の再生
-        bgMusic = this.sound.add('bgm', { loop: true, volume: 0.5 });
-        bgMusic.play();
+        if (!bgMusic) {
+            bgMusic = this.sound.add('bgm', { loop: true, volume: 0.5 });
+            bgMusic.play();
+        }
     }
 }
 
@@ -68,14 +70,14 @@ class GameScene extends Phaser.Scene {
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('background', 'assets/background.png');
         this.load.image('star', 'assets/star.png'); // パーティクル用
-        this.load.audio('jump', 'assets/sounds/jump.wav');
-        this.load.audio('hit', 'assets/sounds/hit.wav');
-        this.load.audio('clear', 'assets/sounds/clear.wav');
+        this.load.audio('jump', ['assets/sounds/jump.wav', 'assets/sounds/jump.ogg']);
+        this.load.audio('hit', ['assets/sounds/hit.wav', 'assets/sounds/hit.ogg']);
+        this.load.audio('clear', ['assets/sounds/clear.wav', 'assets/sounds/clear.ogg']);
     }
 
     create() {
         // 背景の追加
-        this.add.image(this.scale.width / 2, this.scale.height / 2, 'background');
+        this.add.image(this.scale.width / 2, this.scale.height / 2, 'background').setDisplaySize(this.scale.width, this.scale.height);
 
         // 効果音の準備
         jumpSound = this.sound.add('jump');
@@ -92,6 +94,7 @@ class GameScene extends Phaser.Scene {
         // プレイヤーの作成
         player = this.physics.add.sprite(100, this.scale.height / 2, 'player');
         player.setCollideWorldBounds(true);
+        player.setScale(0.5); // サイズ調整
 
         // 敵グループの作成
         enemies = this.physics.add.group();
@@ -107,7 +110,7 @@ class GameScene extends Phaser.Scene {
         }, this);
 
         // 衝突判定
-        this.physics.add.overlap(player, enemies, gameOverHandler, null, this);
+        this.physics.add.collider(player, enemies, gameOverHandler, null, this);
     }
 
     update() {
@@ -128,8 +131,8 @@ class GameScene extends Phaser.Scene {
 // Phaserゲームの設定
 const config = {
     type: Phaser.AUTO,
-    width: 800, // 固定サイズ
-    height: 600,
+    width: window.innerWidth,
+    height: window.innerHeight,
     backgroundColor: '#f0e6f6', // 柔らかな紫色
     scene: [TitleScene, GameScene], // シーンを配列で指定
     physics: {
@@ -137,12 +140,19 @@ const config = {
         arcade: {
             debug: false
         }
+    },
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
     }
 };
 
 const game = new Phaser.Game(config);
 
-// 以下の関数はそのままですので、省略せずに再掲します。
+// ウィンドウリサイズ時の処理
+window.addEventListener('resize', () => {
+    game.scale.resize(window.innerWidth, window.innerHeight);
+});
 
 // プレイヤーを移動させる関数
 function shootPlayer() {
@@ -191,11 +201,19 @@ function setupLevel(scene, levelNumber) {
 
 // 敵生成関数
 function createEnemy(scene, config, index) {
-    // 敵の位置をランダムに配置
-    const yPosition = Phaser.Math.Between(100, scene.scale.height - 100);
+    // 敵の位置をプレイヤーと重ならないように配置
+    const minY = 100;
+    const maxY = scene.scale.height - 100;
+    let yPosition;
+
+    do {
+        yPosition = Phaser.Math.Between(minY, maxY);
+    } while (Math.abs(yPosition - player.y) < 100);
+
     const enemy = scene.physics.add.sprite(scene.scale.width - 100, yPosition, 'enemy');
     enemy.setData('movement', config.movement);
     enemy.setData('speed', config.speed);
+    enemy.setScale(0.5); // サイズ調整
 
     // 敵の速度と動きの設定
     if (config.movement === "floating") {
@@ -232,7 +250,7 @@ function gameOverHandler(player, enemy) {
     hitSound.play();
     player.active = false;
     player.setVelocity(0, 0);
-    showGameOverUI(this);
+    showGameOverUI(this.scene);
 }
 
 // ゲームオーバーUIの表示
