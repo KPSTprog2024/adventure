@@ -1,0 +1,39 @@
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ボディのスタイル */
+body {
+    background-color: #f0e6f6; /* 柔らかな紫色 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Kiwi Maru', serif;
+}
+
+/* ゲームキャンバスのスタイル */
+canvas {
+    display: block;
+}
+
+/* ボタンの共通スタイル */
+.button {
+    font-size: 24px;
+    color: #ffffff;
+    background-color: #a78bfa; /* 柔らかな紫色 */
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    margin: 10px;
+    text-align: center;
+}
+
+.button:active {
+    transform: scale(0.95);
+}
