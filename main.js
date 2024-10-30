@@ -94,7 +94,10 @@ class GameScene extends Phaser.Scene {
         // プレイヤーの作成
         player = this.physics.add.sprite(100, this.scale.height / 2, 'player');
         player.setCollideWorldBounds(true);
-        player.setScale(0.5); // サイズ調整
+        player.setScale(0.0625); // サイズを1/16に調整
+
+        // 物理ボディのサイズを調整
+        player.body.setSize(player.width, player.height, true);
 
         // 敵グループの作成
         enemies = this.physics.add.group();
@@ -110,7 +113,7 @@ class GameScene extends Phaser.Scene {
         }, this);
 
         // 衝突判定
-        this.physics.add.collider(player, enemies, gameOverHandler, null, this);
+        this.physics.add.overlap(player, enemies, gameOverHandler, null, this);
     }
 
     update() {
@@ -213,7 +216,10 @@ function createEnemy(scene, config, index) {
     const enemy = scene.physics.add.sprite(scene.scale.width - 100, yPosition, 'enemy');
     enemy.setData('movement', config.movement);
     enemy.setData('speed', config.speed);
-    enemy.setScale(0.5); // サイズ調整
+    enemy.setScale(0.0625); // サイズを1/16に調整
+
+    // 物理ボディのサイズを調整
+    enemy.body.setSize(enemy.width, enemy.height, true);
 
     // 敵の速度と動きの設定
     if (config.movement === "floating") {
@@ -237,7 +243,6 @@ function createEnemy(scene, config, index) {
 // 敵の動きを制御する関数
 function handleEnemyMovement(enemy) {
     const movement = enemy.getData('movement');
-    const speed = enemy.getData('speed');
 
     if (movement === "wave") {
         enemy.y = enemy.getData('initialY') + Math.sin(enemy.x / 50) * 50;
@@ -245,12 +250,12 @@ function handleEnemyMovement(enemy) {
 }
 
 // ゲームオーバー時の処理
-function gameOverHandler(player, enemy) {
+function gameOverHandler(playerSprite, enemySprite) {
     isGameOver = true;
     hitSound.play();
     player.active = false;
     player.setVelocity(0, 0);
-    showGameOverUI(this.scene);
+    showGameOverUI(player.scene);
 }
 
 // ゲームオーバーUIの表示
