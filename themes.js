@@ -5,10 +5,10 @@ const themes = [
         name: "はじまりのそら",
         enemyConfig: {
             type: "slow",
-            baseSpeed: 40,
+            baseSpeed: 100,
             speedIncrement: 5,
-            movement: "floating",
-            size: { width: 60, height: 60 },
+            movement: "straight", // 直線移動
+            size: { width: 50, height: 50 },
             color: 0xFFE4E1 // ミスティローズ
         }
     },
@@ -16,9 +16,9 @@ const themes = [
         name: "きらめくもり",
         enemyConfig: {
             type: "medium",
-            baseSpeed: 60,
+            baseSpeed: 120,
             speedIncrement: 10,
-            movement: "glide",
+            movement: "floating", // ゆっくり上下に動く
             size: { width: 50, height: 50 },
             color: 0x98FB98 // ペールグリーン
         }
@@ -27,10 +27,10 @@ const themes = [
         name: "ひかりのうみ",
         enemyConfig: {
             type: "fast",
-            baseSpeed: 80,
+            baseSpeed: 140,
             speedIncrement: 15,
-            movement: "wave",
-            size: { width: 40, height: 40 },
+            movement: "wave", // 波状に動く
+            size: { width: 50, height: 50 },
             color: 0xADD8E6 // ライトブルー
         }
     }
