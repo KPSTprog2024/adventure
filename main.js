@@ -10,6 +10,7 @@ let levelText;
 let bgMusic;
 let jumpSound;
 let hitSound;
+let clearSound;
 
 // Phaserゲームの設定
 const config = {
@@ -17,11 +18,7 @@ const config = {
     width: 800, // 固定サイズ
     height: 600,
     backgroundColor: '#f0e6f6', // 柔らかな紫色
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
-    },
+    scene: [TitleScene, GameScene], // シーンを配列で指定
     physics: {
         default: 'arcade',
         arcade: {
@@ -32,73 +29,116 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-// シーンのプリロード
-function preload() {
-    // アセットのロード
-    this.load.image('player', 'assets/player.png');
-    this.load.image('enemy', 'assets/enemy.png');
-    this.load.image('background', 'assets/background.png');
-    this.load.audio('bgm', 'assets/sounds/bgm.mp3');
-    this.load.audio('jump', 'assets/sounds/jump.wav');
-    this.load.audio('hit', 'assets/sounds/hit.wav');
-    this.load.audio('clear', 'assets/sounds/clear.wav');
-}
-
-// シーンの作成
-function create() {
-    // 背景の追加
-    this.add.image(400, 300, 'background');
-
-    // 背景音楽の再生
-    bgMusic = this.sound.add('bgm', { loop: true, volume: 0.5 });
-    bgMusic.play();
-
-    // 効果音の準備
-    jumpSound = this.sound.add('jump');
-    hitSound = this.sound.add('hit');
-    clearSound = this.sound.add('clear');
-
-    // レベル表示テキスト
-    levelText = this.add.text(20, 20, '', {
-        fontSize: '24px',
-        fill: '#ffffff',
-        fontFamily: 'Kiwi Maru'
-    });
-
-    // プレイヤーの作成
-    player = this.physics.add.sprite(100, this.scale.height / 2, 'player');
-    player.setCollideWorldBounds(true);
-
-    // 敵グループの作成
-    enemies = this.physics.add.group();
-
-    // 初期レベルの設定
-    setupLevel(this, currentLevel);
-
-    // タッチ操作の設定
-    this.input.on('pointerdown', function (pointer) {
-        if (!isGameOver) {
-            shootPlayer();
-        }
-    }, this);
-
-    // 衝突判定
-    this.physics.add.overlap(player, enemies, gameOverHandler, null, this);
-}
-
-// シーンの更新
-function update() {
-    if (!isGameOver && player.active) {
-        // ゴール判定
-        if (player.x > this.scale.width - 50) {
-            levelClear(this);
-        }
+// タイトルシーン
+class TitleScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'TitleScene' });
     }
 
-    // 敵の動きの更新
-    enemies.getChildren().forEach(function (enemy) {
-        handleEnemyMovement(enemy);
-    });
+    preload() {
+        // アセットのロード
+        this.load.image('background', 'assets/background.png');
+        this.load.image('title', 'assets/title.png'); // タイトル画像（必要に応じて）
+        this.load.audio('bgm', 'assets/sounds/bgm.mp3');
+    }
+
+    create() {
+        // 背景の追加
+        this.add.image(400, 300, 'background');
+
+        // タイトルテキスト
+        const titleText = this.add.text(this.scale.width / 2, 200, 'ゆめのぼうけん', {
+            fontSize: '64px',
+            fill: '#ffffff',
+            fontFamily: 'Kiwi Maru'
+        }).setOrigin(0.5);
+
+        // 「はじめる」ボタン
+        const startButton = this.add.text(this.scale.width / 2, 400, 'はじめる', {
+            fontSize: '48px',
+            fill: '#ffffff',
+            backgroundColor: '#a78bfa',
+            padding: { x: 40, y: 20 },
+            borderRadius: 30,
+            fontFamily: 'Kiwi Maru'
+        }).setOrigin(0.5).setInteractive();
+
+        startButton.on('pointerdown', () => {
+            this.scene.start('GameScene');
+        });
+
+        // 背景音楽の再生
+        bgMusic = this.sound.add('bgm', { loop: true, volume: 0.5 });
+        bgMusic.play();
+    }
+}
+
+// ゲームシーン
+class GameScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'GameScene' });
+    }
+
+    preload() {
+        // アセットのロード
+        this.load.image('player', 'assets/player.png');
+        this.load.image('enemy', 'assets/enemy.png');
+        this.load.image('background', 'assets/background.png');
+        this.load.audio('jump', 'assets/sounds/jump.wav');
+        this.load.audio('hit', 'assets/sounds/hit.wav');
+        this.load.audio('clear', 'assets/sounds/clear.wav');
+    }
+
+    create() {
+        // 背景の追加
+        this.add.image(400, 300, 'background');
+
+        // 効果音の準備
+        jumpSound = this.sound.add('jump');
+        hitSound = this.sound.add('hit');
+        clearSound = this.sound.add('clear');
+
+        // レベル表示テキスト
+        levelText = this.add.text(20, 20, '', {
+            fontSize: '24px',
+            fill: '#ffffff',
+            fontFamily: 'Kiwi Maru'
+        });
+
+        // プレイヤーの作成
+        player = this.physics.add.sprite(100, this.scale.height / 2, 'player');
+        player.setCollideWorldBounds(true);
+
+        // 敵グループの作成
+        enemies = this.physics.add.group();
+
+        // 初期レベルの設定
+        setupLevel(this, currentLevel);
+
+        // タッチ操作の設定
+        this.input.on('pointerdown', function (pointer) {
+            if (!isGameOver) {
+                shootPlayer();
+            }
+        }, this);
+
+        // 衝突判定
+        this.physics.add.overlap(player, enemies, gameOverHandler, null, this);
+    }
+
+    update() {
+        if (!isGameOver && player.active) {
+            // ゴール判定
+            if (player.x > this.scale.width - 50) {
+                levelClear(this);
+            }
+        }
+
+        // 敵の動きの更新
+        enemies.getChildren().forEach(function (enemy) {
+            handleEnemyMovement(enemy);
+        });
+    }
 }
 
 // プレイヤーを移動させる関数
