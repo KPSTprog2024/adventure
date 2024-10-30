@@ -12,23 +12,6 @@ let jumpSound;
 let hitSound;
 let clearSound;
 
-// Phaserゲームの設定
-const config = {
-    type: Phaser.AUTO,
-    width: 800, // 固定サイズ
-    height: 600,
-    backgroundColor: '#f0e6f6', // 柔らかな紫色
-    scene: [TitleScene, GameScene], // シーンを配列で指定
-    physics: {
-        default: 'arcade',
-        arcade: {
-            debug: false
-        }
-    }
-};
-
-const game = new Phaser.Game(config);
-
 // タイトルシーン
 class TitleScene extends Phaser.Scene {
     constructor() {
@@ -44,7 +27,7 @@ class TitleScene extends Phaser.Scene {
 
     create() {
         // 背景の追加
-        this.add.image(400, 300, 'background');
+        this.add.image(this.scale.width / 2, this.scale.height / 2, 'background');
 
         // タイトルテキスト
         const titleText = this.add.text(this.scale.width / 2, 200, 'ゆめのぼうけん', {
@@ -84,6 +67,7 @@ class GameScene extends Phaser.Scene {
         this.load.image('player', 'assets/player.png');
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('background', 'assets/background.png');
+        this.load.image('star', 'assets/star.png'); // パーティクル用
         this.load.audio('jump', 'assets/sounds/jump.wav');
         this.load.audio('hit', 'assets/sounds/hit.wav');
         this.load.audio('clear', 'assets/sounds/clear.wav');
@@ -91,7 +75,7 @@ class GameScene extends Phaser.Scene {
 
     create() {
         // 背景の追加
-        this.add.image(400, 300, 'background');
+        this.add.image(this.scale.width / 2, this.scale.height / 2, 'background');
 
         // 効果音の準備
         jumpSound = this.sound.add('jump');
@@ -140,6 +124,25 @@ class GameScene extends Phaser.Scene {
         });
     }
 }
+
+// Phaserゲームの設定
+const config = {
+    type: Phaser.AUTO,
+    width: 800, // 固定サイズ
+    height: 600,
+    backgroundColor: '#f0e6f6', // 柔らかな紫色
+    scene: [TitleScene, GameScene], // シーンを配列で指定
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false
+        }
+    }
+};
+
+const game = new Phaser.Game(config);
+
+// 以下の関数はそのままですので、省略せずに再掲します。
 
 // プレイヤーを移動させる関数
 function shootPlayer() {
